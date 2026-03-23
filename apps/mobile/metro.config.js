@@ -15,4 +15,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, 'node_modules'),
 ];
 
+// Enable package exports resolution so Metro uses the correct platform-specific
+// build from each package's "exports" field, avoiding ESM-only code that
+// contains `import.meta` which is not supported outside of ES modules.
+config.resolver.unstable_enablePackageExports = true;
+
 module.exports = config;
