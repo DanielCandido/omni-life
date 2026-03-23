@@ -1,0 +1,17 @@
+export const SCORING_POINTS = {
+  TASK_COMPLETED: 10,
+  TASK_HIGH_PRIORITY: 5,
+  DAILY_STREAK_BONUS: 20,
+  MEAL_LOGGED: 5,
+  TRANSACTION_LOGGED: 2,
+} as const;
+
+export const JWT_CONSTANTS = {
+  ACCESS_TOKEN_EXPIRY: '15m',
+  REFRESH_TOKEN_EXPIRY: '7d',
+} as const;
+
+export const PAGINATION_DEFAULTS = {
+  PAGE: 1,
+  LIMIT: 20,
+} as const;
