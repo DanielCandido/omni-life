@@ -10,7 +10,12 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
-import { RegisterDto, LoginDto, RefreshTokenDto, SocialLoginDto } from '../../../presentation/modules/auth/dto/auth.dto';
+import {
+  RegisterDto,
+  LoginDto,
+  RefreshTokenDto,
+  SocialLoginDto,
+} from '../../../presentation/modules/auth/dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -69,7 +74,9 @@ export class AuthService {
     let payload: any;
     try {
       payload = this.jwtService.verify(dto.refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET') || 'dev-only-insecure-refresh-secret',
+        secret:
+          this.configService.get<string>('JWT_REFRESH_SECRET') ||
+          'dev-only-insecure-refresh-secret',
       });
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
@@ -89,7 +96,7 @@ export class AuthService {
     }
 
     // Verify the provided token against each stored hash
-    let matchedToken = null;
+    let matchedToken: null | { id: string; tokenHash: string } = null;
     for (const token of storedTokens) {
       const isMatch = await bcrypt.compare(dto.refreshToken, token.tokenHash);
       if (isMatch) {
@@ -161,7 +168,8 @@ export class AuthService {
     const payload = { sub: userId, email };
 
     const jwtSecret = this.configService.get<string>('JWT_SECRET') || 'dev-only-insecure-secret';
-    const jwtRefreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || 'dev-only-insecure-refresh-secret';
+    const jwtRefreshSecret =
+      this.configService.get<string>('JWT_REFRESH_SECRET') || 'dev-only-insecure-refresh-secret';
 
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtSecret,
