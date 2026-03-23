@@ -1,19 +1,34 @@
 import { Tabs, Redirect } from 'expo-router';
-import { Text } from 'react-native';
+import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/auth.store';
+import { Colors } from '../../utils/theme';
 
-function TabIcon({ label, active }: { label: string; active: boolean }) {
-  const icons: Record<string, string> = {
-    Dashboard: '🏠',
-    Calendar: '📅',
-    Diet: '🥗',
-    Finance: '💰',
-    Profile: '👤',
-  };
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
+interface TabIconProps {
+  name: IoniconsName;
+  focused: boolean;
+}
+
+function TabIcon({ name, focused }: TabIconProps) {
   return (
-    <Text className={`text-2xl ${active ? 'opacity-100' : 'opacity-50'}`}>
-      {icons[label] || '●'}
-    </Text>
+    <View
+      style={{
+        width: 40,
+        height: 32,
+        borderRadius: 10,
+        backgroundColor: focused ? Colors.primaryLight : 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Ionicons
+        name={name}
+        size={22}
+        color={focused ? Colors.primary : Colors.textMuted}
+      />
+    </View>
   );
 }
 
@@ -27,25 +42,23 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6366f1',
-        tabBarInactiveTintColor: '#9ca3af',
+        headerShown: false,
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textMuted,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e5e7eb',
+          backgroundColor: Colors.card,
+          borderTopColor: Colors.border,
+          borderTopWidth: 1,
           paddingBottom: 8,
-          paddingTop: 8,
-          height: 64,
+          paddingTop: 6,
+          height: 68,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
-        },
-        headerStyle: {
-          backgroundColor: '#6366f1',
-        },
-        headerTintColor: '#ffffff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
+          letterSpacing: 0.5,
+          textTransform: 'uppercase',
+          marginTop: 2,
         },
       }}
     >
@@ -53,35 +66,35 @@ export default function TabsLayout() {
         name="dashboard"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ focused }) => <TabIcon label="Dashboard" active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="home-outline" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
           title: 'Calendar',
-          tabBarIcon: ({ focused }) => <TabIcon label="Calendar" active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="calendar-outline" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="diet"
         options={{
           title: 'Diet',
-          tabBarIcon: ({ focused }) => <TabIcon label="Diet" active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="restaurant-outline" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="finance"
         options={{
           title: 'Finance',
-          tabBarIcon: ({ focused }) => <TabIcon label="Finance" active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="wallet-outline" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => <TabIcon label="Profile" active={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="person-outline" focused={focused} />,
         }}
       />
     </Tabs>

@@ -3,6 +3,10 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '../store/auth.store';
 
+// NativeWind global styles — path relative to app root (metro resolves from project root)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import '../../global.css';
+
 export default function RootLayout() {
   const { initialize } = useAuthStore();
 
@@ -16,7 +20,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </>
   );
 }

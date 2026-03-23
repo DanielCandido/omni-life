@@ -69,14 +69,14 @@ export class AuthService {
     let payload: any;
     try {
       payload = this.jwtService.verify(dto.refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET', 'refresh-secret'),
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET') || 'dev-only-insecure-refresh-secret',
       });
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const tokenHash = await bcrypt.hash(dto.refreshToken, 10);
-    const storedToken = await this.prisma.refreshToken.findFirst({
+    // Find all non-revoked, non-expired tokens for this user
+    const storedTokens = await this.prisma.refreshToken.findMany({
       where: {
         userId: payload.sub,
         revoked: false,
@@ -84,13 +84,27 @@ export class AuthService {
       },
     });
 
-    if (!storedToken) {
+    if (!storedTokens.length) {
       throw new UnauthorizedException('Refresh token not found or expired');
     }
 
-    // Revoke old token
+    // Verify the provided token against each stored hash
+    let matchedToken = null;
+    for (const token of storedTokens) {
+      const isMatch = await bcrypt.compare(dto.refreshToken, token.tokenHash);
+      if (isMatch) {
+        matchedToken = token;
+        break;
+      }
+    }
+
+    if (!matchedToken) {
+      throw new UnauthorizedException('Refresh token is invalid');
+    }
+
+    // Revoke old token (rotation)
     await this.prisma.refreshToken.update({
-      where: { id: storedToken.id },
+      where: { id: matchedToken.id },
       data: { revoked: true },
     });
 
@@ -146,13 +160,16 @@ export class AuthService {
   private async generateTokens(userId: string, email: string) {
     const payload = { sub: userId, email };
 
+    const jwtSecret = this.configService.get<string>('JWT_SECRET') || 'dev-only-insecure-secret';
+    const jwtRefreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || 'dev-only-insecure-refresh-secret';
+
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET', 'secret'),
+      secret: jwtSecret,
       expiresIn: this.configService.get<string>('JWT_EXPIRY', '15m'),
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET', 'refresh-secret'),
+      secret: jwtRefreshSecret,
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRY', '7d'),
     });
 

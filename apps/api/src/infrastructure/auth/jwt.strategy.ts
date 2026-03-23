@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -13,14 +13,24 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  private readonly logger = new Logger(JwtStrategy.name);
+
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
+    const secret = configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      if (configService.get<string>('NODE_ENV') === 'production') {
+        throw new Error('JWT_SECRET environment variable is required in production');
+      }
+      // Development-only fallback — never use in production
+      Logger.warn('JWT_SECRET is not set. Using insecure default for development only.', 'JwtStrategy');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET', 'default-secret-change-in-production'),
+      secretOrKey: secret || 'dev-only-insecure-secret',
     });
   }
 
